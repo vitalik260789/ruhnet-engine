@@ -1,0 +1,27 @@
+name: fetch
+# Downloads files listed in fetch.json ({"tag": "...", "files": {"name.jpg": "https://..."}})
+# and publishes them as assets of a pre-release, so they can be inspected and reused.
+on:
+  push:
+    paths: ["fetch.json"]
+permissions:
+  contents: write
+jobs:
+  fetch:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          mkdir -p dl
+          python3 - <<'PY'
+          import json, subprocess
+          c = json.load(open("fetch.json"))
+          for name, url in c["files"].items():
+              subprocess.run(["curl", "-sSL", "--fail", "-A", "Mozilla/5.0", "-o", f"dl/{name}", url], check=False)
+          PY
+          ls -la dl
+      - env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG=$(python3 -c "import json;print(json.load(open('fetch.json'))['tag'])")
+          gh release create "$TAG" dl/* --prerelease --title "$TAG" --notes "fetched files"
