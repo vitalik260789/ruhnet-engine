@@ -108,11 +108,21 @@ if __name__ == "__main__":
     proj = sys.argv[1]
     cfg = json.load(open(os.path.join(proj, "config.json")))
     seed = cfg["seed"]
+    P.set_material(cfg.get("material", "bottles"))
     turns, collapsed = P.plan(seed)
     print("seed", seed, "pulls", len(turns), "collapsed", collapsed)
     data = replay([[t[0], t[4]] for t in turns])
     rid, uniq = dedupe(data["frames"])
     data["rid"], data["uniq"] = rid, uniq
+    data["material"] = cfg.get("material", "bottles")
+    # camera: level, horizon at frame row hy (via lens shift); tower base at y=1650, top >= ~540
+    lens = cfg.get("lens", 40)
+    f = lens / 36.0 * 1920
+    hy = cfg.get("horizon_y", 960)
+    tw, th = P.tower_size()
+    d = max(f * th / 1100, f * tw / 860)
+    data["camera"] = dict(lens=lens, d=round(d, 4), h=round((1650 - hy) * d / f, 4), hy=hy,
+                          shift_y=round((hy - 960) / 1920, 5))
     data["phys"] = dict(PPM=P.PPM, TABLE_Y=P.TABLE_Y, CXP=P.CXP, BW=P.BW, BH=P.BH, LEVELS=P.LEVELS, PITCH=P.PITCH,
                         PL_H=P.PL_H)
     os.makedirs(os.path.join(proj, "out"), exist_ok=True)

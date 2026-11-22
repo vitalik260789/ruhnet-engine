@@ -46,6 +46,13 @@ jobs:
           print("matrix=" + json.dumps(list(range(n))))
           EOF
       - run: pip install pymunk numpy scipy
+      - name: download background photo (bg_url)
+        env:
+          P: projects/${{ steps.cfg.outputs.project }}
+        run: |
+          mkdir -p "$P/out"
+          URL=$(python -c "import json;print(json.load(open('$P/config.json')).get('bg_url',''))")
+          if [ -n "$URL" ]; then curl -sSL --fail -A "Mozilla/5.0" -o "$P/out/bg.jpg" "$URL"; ls -la "$P/out/bg.jpg"; fi
       - run: python tools/plan3d.py projects/${{ steps.cfg.outputs.project }}
       - run: python tools/sound3d.py projects/${{ steps.cfg.outputs.project }}
       - uses: actions/upload-artifact@v4

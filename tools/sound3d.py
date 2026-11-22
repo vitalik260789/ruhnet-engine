@@ -11,6 +11,8 @@ SR = S.SR
 rng = np.random.default_rng(31)
 PROJ = sys.argv[1]
 E = json.load(open(os.path.join(PROJ, "out", "frames.json")))
+MAT = E.get("material", "bottles")
+CFG = json.load(open(os.path.join(PROJ, "config.json")))
 E = {k: E[k] for k in ("events", "impacts", "sched", "duration")}
 E["events"] = [list(e) for e in E["events"]] + [["hl", s["hl"], i] for i, s in enumerate(E["sched"])]
 DUR = E["duration"] + 0.4
@@ -65,6 +67,38 @@ def glass(f0=None, amp=1.0, dur=0.3):
     return s * amp
 
 
+def clink(f0=None, amp=1.0, dur=0.22):
+    f0 = f0 or rng.uniform(380, 700)
+    r = rng.uniform(0.96, 1.04, 4)
+    s = S.tone([f0, f0 * 2.72 * r[0], f0 * 5.32 * r[1], f0 * 8.1 * r[2]], [0.5, 0.35, 0.22, 0.12],
+               [0.09, 0.06, 0.035, 0.02], dur)
+    b = S.burst(0.015, 2500, 12000, 0.002)
+    s[: len(b)] += b * 0.6
+    return s * amp
+
+
+def wind(d):
+    n = int(d * SR)
+    x = S.filt(S.noise(d), 180, 1400, 2) * S.wobble(n, 0.6, 0.7)
+    x += S.filt(S.noise(d), 2500, 6000, 2) * 0.15 * S.wobble(n, 1.5, 0.9)
+    return (x * S.fade_window(n, 0.8, 1.0)).astype(np.float32)
+
+
+def hit(kind, amp, slow, pan, t):
+    if kind == "plank" or kind == "block":
+        f0 = rng.uniform(300, 700) if slow else rng.uniform(550, 1100)
+        put(knock(f0, amp, 0.2 if slow else 0.12), t, 0.5, pan)
+    elif kind == "can":
+        f0 = rng.uniform(260, 480) if slow else rng.uniform(420, 800)
+        put(clink(f0, amp, 0.35 if slow else 0.22), t, 0.42, pan)
+    elif kind == "ice":
+        f0 = rng.uniform(3500, 5500) if slow else rng.uniform(5000, 8000)
+        put(glass(f0, amp * 0.8, 0.25 if slow else 0.15), t, 0.36, pan)
+    else:
+        f0 = rng.uniform(1800, 3200) if slow else rng.uniform(3000, 6500)
+        put(glass(f0, amp, 0.45 if slow else 0.3), t, 0.38, pan)
+
+
 def waves(d):
     n = int(d * SR)
     tt = np.arange(n) / SR
@@ -83,7 +117,7 @@ coll = coll[0] if coll else DUR
 sched = E["sched"]
 last_pull = sched[-1]["pull"]
 
-put(waves(DUR), 0, 0.16)
+put(waves(DUR) if CFG.get('ambience', 'waves') == 'waves' else wind(DUR), 0, 0.16)
 
 # tension drone: rises until the collapse
 n = int(coll * SR)
@@ -121,7 +155,12 @@ for e in E["events"]:
             put(s.astype(np.float32), e[1], 0.12)
     elif e[0] == "pull":
         put(scrape(0.26), e[1], 0.45, rng.uniform(-0.2, 0.2))
-        put(glass(rng.uniform(2500, 3500), 0.4, 0.2), e[1] + 0.02, 0.3)
+        if MAT == "cans":
+            put(clink(rng.uniform(900, 1300), 0.5, 0.15), e[1] + 0.02, 0.35)
+        elif MAT == "blocks":
+            put(knock(rng.uniform(900, 1300), 0.5, 0.1), e[1] + 0.02, 0.4)
+        else:
+            put(glass(rng.uniform(2500, 3500) * (1.6 if MAT == "ice" else 1), 0.4, 0.2), e[1] + 0.02, 0.3)
         put(knock(amp=0.4), e[1] + 0.25, 0.4)
     elif e[0] == "collapse":
         put(S.thud(42, 1.2, 1.0), e[1], 0.9)
@@ -140,12 +179,7 @@ for t, m, kind in imps:
     slow = (t - coll) < 2.6
     amp = min(1.0, 0.25 + math.log10(m / 40 + 1) * 0.6)
     pan = rng.uniform(-0.6, 0.6)
-    if kind == "plank":
-        f0 = rng.uniform(300, 700) if slow else rng.uniform(550, 1100)
-        put(knock(f0, amp, 0.2 if slow else 0.12), t, 0.5, pan)
-    else:
-        f0 = rng.uniform(1800, 3200) if slow else rng.uniform(3000, 6500)
-        put(glass(f0, amp, 0.45 if slow else 0.3), t, 0.38, pan)
+    hit(kind, amp, slow, pan, t)
     if kind == "floor":
         put(S.burst(0.12, 300, 3000, 0.04), t, 0.15 * amp, pan)   # sand puff
 

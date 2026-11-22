@@ -64,18 +64,23 @@ def main():
     D = json.load(open(os.path.join(a.proj, "out", "frames.json")))
     ph = D["phys"]
     PPM, TY, CXP = ph["PPM"], ph["TABLE_Y"], ph["CXP"]
-    fpx = cfg["lens"] / 36.0 * H
-    cd, chh = cfg["cam_d"], cfg["cam_h"]
+    CAM = D["camera"]
+    fpx = CAM["lens"] / 36.0 * H
+    cd, chh, hy = CAM["d"], CAM["h"], CAM["hy"]
 
-    def proj(X, Z):                                    # level camera looking along +Y
-        return W / 2 + fpx * X / cd, H / 2 - fpx * (Z - chh) / cd
+    def proj(X, Z):                                    # level camera looking along +Y, horizon at row hy
+        return W / 2 + fpx * X / cd, hy - fpx * (Z - chh) / cd
 
-    # background: photo scaled to frame width, horizon on the camera horizon (frame centre)
-    im = Image.open(os.path.join(a.proj, cfg["bg"])).convert("RGB")
-    s = max(W / im.width, (H / 2) / cfg["bg_horizon"], (H / 2) / (im.height - cfg["bg_horizon"])) * 1.005
+    # background: photo scaled so its horizon row lands on the camera horizon (hy)
+    bgp = os.path.join(a.proj, "out", "bg.jpg") if cfg.get("bg_url") else os.path.join(a.proj, cfg["bg"])
+    im = Image.open(bgp).convert("RGB")
+    kf = im.width / cfg.get("bg_ref_width", im.width)      # coordinates were measured on a copy this wide
+    bh = cfg["bg_horizon"] * kf
+    s = max(W / im.width, hy / bh, (H - hy) / (im.height - bh)) * 1.005
     big = np.asarray(im.resize((round(im.width * s), round(im.height * s)), Image.LANCZOS), np.float32)
-    oy = int(round(cfg["bg_horizon"] * s - H / 2))
-    ox = int(round((big.shape[1] - W) / 2))
+    oy = int(round(bh * s - hy))
+    cx_ph = cfg.get("bg_cx", im.width / 2 / kf) * kf * s
+    ox = int(round(min(max(cx_ph - W / 2, 0), big.shape[1] - W)))
     bg = cv2.GaussianBlur(big[oy:oy + H, ox:ox + W].copy(), (0, 0), cfg.get("bg_blur", 1.6))
 
     frames, rid, sched = D["frames"], D["rid"], D["sched"]
@@ -163,7 +168,7 @@ def main():
                 al *= max(0, 1 - (t - ct - 0.5) / 0.4)
             n = fr["pulled"] if (ct is None or t < ct) else cn
             if n not in nums:
-                c = (255, 255, 255) if n < 7 else ((255, 205, 80) if n < 11 else (255, 110, 55))
+                c = (255, 255, 255) if n < 0.5 * cn else ((255, 205, 80) if n < 0.8 * cn else (255, 110, 55))
                 nums[n] = text_sprite([(str(n), FONT_B, 210, c)], stroke=10)
             _, sc = pop(t, sched[n - 1]["pull"] if n > 0 else 2.4, 0.2)
             paste(frame, label, W / 2, 175, al, 1)

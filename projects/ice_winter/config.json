@@ -1,0 +1,20 @@
+{
+ "seed": 5,
+ "material": "ice",
+ "title": [
+  "СКОЛЬКО ЛЬДИНОК",
+  "МОЖНО ВЫТАЩИТЬ?"
+ ],
+ "end": "РУХНУЛА НА {n}-Й!",
+ "bg_url": "https://images.pexels.com/photos/20522439/pexels-photo-20522439.jpeg?auto=compress&w=2800",
+ "bg_ref_width": 1400,
+ "bg_horizon": 380,
+ "bg_cx": 350,
+ "horizon_y": 900,
+ "sun": [
+  30,
+  45
+ ],
+ "ambience": "wind",
+ "spp": 16
+}

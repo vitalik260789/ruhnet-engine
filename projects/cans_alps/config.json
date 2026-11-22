@@ -1,0 +1,25 @@
+{
+ "seed": 5,
+ "material": "cans",
+ "title": [
+  "СКОЛЬКО БАНОК",
+  "МОЖНО ВЫТАЩИТЬ?"
+ ],
+ "end": "РУХНУЛА НА {n}-Й!",
+ "bg_url": "https://images.pexels.com/photos/40161192/pexels-photo-40161192.jpeg?auto=compress&w=2800",
+ "bg_ref_width": 1400,
+ "bg_horizon": 600,
+ "bg_cx": 620,
+ "horizon_y": 1300,
+ "sun": [
+  35,
+  -120
+ ],
+ "platform": [
+  1.4,
+  0.6
+ ],
+ "ambience": "wind",
+ "spp": 16,
+ "credit": "Фото фона: Peter Meyer, Pexels"
+}
