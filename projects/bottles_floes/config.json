@@ -1,0 +1,26 @@
+{
+ "seed": 6,
+ "material": "bottles",
+ "title": [
+  "СКОЛЬКО БУТЫЛОК",
+  "МОЖНО ВЫТАЩИТЬ?"
+ ],
+ "end": "РУХНУЛА НА {n}-Й!",
+ "bg_url": "https://images.pexels.com/photos/11573321/pexels-photo-11573321.jpeg?auto=compress&w=2800",
+ "bg_ref_width": 1400,
+ "bg_horizon": 255,
+ "bg_cx": 700,
+ "horizon_y": 450,
+ "sun": [
+  35,
+  -150
+ ],
+ "platform": [
+  1.8,
+  0.7
+ ],
+ "ambience": "waves",
+ "sun_strength": 3.5,
+ "sky_strength": 0.4,
+ "spp": 16
+}

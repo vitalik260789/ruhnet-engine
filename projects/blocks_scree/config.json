@@ -1,0 +1,26 @@
+{
+ "seed": 7,
+ "material": "blocks",
+ "title": [
+  "СКОЛЬКО БРУСКОВ",
+  "МОЖНО ВЫТАЩИТЬ?"
+ ],
+ "end": "РУХНУЛА НА {n}-М!",
+ "bg_url": "https://images.pexels.com/photos/35905430/pexels-photo-35905430.jpeg?auto=compress&w=2800",
+ "bg_ref_width": 1400,
+ "bg_horizon": 600,
+ "bg_cx": 760,
+ "horizon_y": 1000,
+ "sun": [
+  50,
+  160
+ ],
+ "platform": [
+  2.2,
+  0.8
+ ],
+ "ambience": "wind",
+ "sun_strength": 3.0,
+ "sky_strength": 0.45,
+ "spp": 16
+}

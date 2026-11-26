@@ -1,0 +1,26 @@
+{
+ "seed": 9,
+ "material": "cans",
+ "title": [
+  "СКОЛЬКО БАНОК",
+  "МОЖНО ВЫТАЩИТЬ?"
+ ],
+ "end": "РУХНУЛА НА {n}-Й!",
+ "bg_url": "https://images.pexels.com/photos/629168/pexels-photo-629168.jpeg?auto=compress&w=2800",
+ "bg_ref_width": 1400,
+ "bg_horizon": 506,
+ "bg_cx": 560,
+ "horizon_y": 1200,
+ "sun": [
+  30,
+  125
+ ],
+ "platform": [
+  1.4,
+  0.6
+ ],
+ "ambience": "waves",
+ "sun_strength": 4.0,
+ "sky_strength": 0.25,
+ "spp": 16
+}
